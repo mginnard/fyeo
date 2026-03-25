@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
 import type { AuditLogEntry } from "@/lib/fyeo/types";
 
 const COLUMNS = [
   { key: "time", label: "Time", width: "11rem" },
-  { key: "flag", label: "Flag", width: "12rem" },
   { key: "environment", label: "Environment", width: "10rem" },
   { key: "action", label: "Action", width: "8rem" },
   { key: "actor", label: "Actor", width: "10rem" },
@@ -37,112 +35,54 @@ function formatChangesFull(changes: string): string {
   }
 }
 
-export function AuditPageClient({
-  initialEntries,
-}: {
-  initialEntries: AuditLogEntry[];
-}) {
-  const [entries] = useState(initialEntries);
-  const [flagFilter, setFlagFilter] = useState("");
+export function AuditTimeline({ entries }: { entries: AuditLogEntry[] }) {
   const [selectedEntry, setSelectedEntry] = useState<AuditLogEntry | null>(null);
 
-  const filtered = useMemo(() => {
-    if (!flagFilter.trim()) return entries;
-    const q = flagFilter.toLowerCase();
-    return entries.filter(
-      (e) =>
-        e.flag_key.toLowerCase().includes(q) ||
-        (e.environment?.toLowerCase().includes(q))
+  if (entries.length === 0) {
+    return (
+      <p className="px-5 py-4 text-sm text-gray-500 dark:text-gray-400">No audit entries yet.</p>
     );
-  }, [entries, flagFilter]);
+  }
 
   return (
     <>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">Audit log</h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
-          History of changes to flags. Select a row for details.
-        </p>
-      </div>
-      <div className="mb-4">
-        <div className="relative w-80 max-w-full">
-          <input
-            type="text"
-            role="searchbox"
-            placeholder="Filter by flag key or environment..."
-            value={flagFilter}
-            onChange={(e) => setFlagFilter(e.target.value)}
-            aria-label="Filter audit log by flag key or environment"
-            className="w-full pl-3 pr-9 py-2 rounded-lg bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 text-sm focus:border-gray-900 dark:focus:border-white focus:outline-none"
-          />
-          {flagFilter ? (
-            <button
-              type="button"
-              onClick={() => setFlagFilter("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
-              aria-label="Clear filter"
-            >
-              <X className="h-4 w-4" strokeWidth={2} aria-hidden />
-            </button>
-          ) : null}
-        </div>
-      </div>
-      <div className="rounded-xl border border-gray-200 dark:border-white/10 overflow-hidden bg-white dark:bg-gray-900">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm table-fixed">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm table-fixed">
             <colgroup>
               {COLUMNS.map((col) => (
                 <col key={col.key} style={col.width ? { width: col.width } : undefined} />
               ))}
             </colgroup>
-            <thead>
-              <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
-                {COLUMNS.map((col) => (
-                  <th
-                    key={col.key}
-                    className="px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400"
-                  >
-                    {col.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
             <tbody>
-              {filtered.map((entry) => (
+              {entries.map((entry) => (
                 <tr
                   key={entry.id}
                   onClick={() => setSelectedEntry(entry)}
-                  className={`border-b border-gray-100 dark:border-white/5 cursor-pointer transition-colors ${
+                  className={`border-b border-gray-100 dark:border-white/5 last:border-b-0 cursor-pointer transition-colors ${
                     selectedEntry?.id === entry.id
                       ? "bg-gray-100 dark:bg-white/10"
                       : "hover:bg-gray-50 dark:hover:bg-white/5"
                   }`}
                 >
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                  <td className="px-5 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">
                     {new Date(entry.created_at).toLocaleString()}
                   </td>
-                  <td className="px-4 py-3 min-w-0">
-                    <Link
-                      href={`/fyeo/flags/${encodeURIComponent(entry.flag_key)}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="font-mono text-gray-900 dark:text-white hover:underline truncate block"
-                    >
-                      {entry.flag_key}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400 truncate">
+                  <td className="px-5 py-3 text-gray-600 dark:text-gray-400 truncate">
                     {entry.environment ?? "—"}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3">
                     <span className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400">
                       {entry.action}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400 truncate">
+                  <td className="px-5 py-3 text-gray-500 dark:text-gray-400 truncate">
                     {entry.actor}
                   </td>
-                  <td className="px-4 py-3 min-w-0">
-                    <span className="font-mono text-gray-500 dark:text-gray-400 truncate block" title={entry.changes && entry.changes !== "{}" ? entry.changes : undefined}>
+                  <td className="px-5 py-3 min-w-0">
+                    <span
+                      className="block truncate font-mono text-sm text-gray-500 dark:text-gray-400"
+                      title={entry.changes && entry.changes !== "{}" ? entry.changes : undefined}
+                    >
                       {truncateChanges(entry.changes)}
                     </span>
                   </td>
@@ -150,10 +90,6 @@ export function AuditPageClient({
               ))}
             </tbody>
           </table>
-        </div>
-        {filtered.length === 0 && (
-          <div className="py-12 text-center text-sm text-gray-500 dark:text-gray-400">No entries.</div>
-        )}
       </div>
 
       <AnimatePresence>
@@ -202,7 +138,7 @@ export function AuditPageClient({
                   <dt className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Flag</dt>
                   <dd>
                     <Link
-                      href={`/fyeo/flags/${encodeURIComponent(selectedEntry.flag_key)}`}
+                      href={`/flags/${encodeURIComponent(selectedEntry.flag_key)}`}
                       className="font-mono text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
                     >
                       {selectedEntry.flag_key}

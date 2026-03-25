@@ -1,9 +1,9 @@
 import { listFlags, listEnvironments, getFlagEnvironments } from "@/lib/fyeo/db";
-import { FlagListClient } from "./FlagListClient";
+import { FlagListClient } from "../FlagListClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function FyeoPage() {
+export default async function FlagsListPage() {
   const flags = listFlags(undefined, process.env.FYEO_DB_PATH ?? ".fyeo/flags.db");
   const environments = listEnvironments(process.env.FYEO_DB_PATH ?? ".fyeo/flags.db");
   const flagsWithEnvs = flags.map((flag) => {

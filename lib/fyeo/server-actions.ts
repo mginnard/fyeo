@@ -7,45 +7,37 @@ import {
   addAuditLog,
   getFlagByKey,
   getEnvironmentBySlug,
+  getEnvironmentById,
   updateFlagEnvironment,
   listEnvironments,
   createEnvironment,
+  updateEnvironment,
+  deleteEnvironment,
 } from "@/lib/fyeo/db";
 
 export type SaveFlagEnvInput = {
   enabled?: number;
   value?: string | null;
   rollout_percentage?: number;
-  rules?: string;
 };
 
 const DB_PATH = process.env.FYEO_DB_PATH ?? ".fyeo/flags.db";
 
-export async function createFlagAction(
-  key: string,
-  name: string,
-  options?: { description?: string; type?: string; default_value?: string }
-) {
+export async function createFlagAction(key: string, name: string, options?: { description?: string }) {
   const existing = getFlagByKey(key, DB_PATH);
   if (existing) return { error: "Flag key already exists" };
   const description = options?.description ?? "";
-  const type = options?.type ?? "boolean";
-  const default_value =
-    options?.default_value ?? (type === "boolean" ? "false" : type === "number" ? "0" : type === "json" ? "{}" : "");
-  const flag = createFlag(key, name, { description, type, default_value }, DB_PATH);
+  const flag = createFlag(key, name, { description }, DB_PATH);
   addAuditLog(
     key,
     "created",
-    { changes: JSON.stringify({ key, name, description, type, default_value }) },
+    { changes: JSON.stringify({ key, name, description }) },
     DB_PATH
   );
   return { flag };
 }
 
-export async function updateFlagAction(
-  flagKey: string,
-  updates: { name?: string; description?: string; type?: string; default_value?: string }
-) {
+export async function updateFlagAction(flagKey: string, updates: { name?: string; description?: string }) {
   const flag = getFlagByKey(flagKey, DB_PATH);
   if (!flag) return { error: "Flag not found" };
   const updated = updateFlag(flagKey, updates, DB_PATH);
@@ -59,7 +51,7 @@ export async function toggleFlagAction(flagKey: string, environmentSlug: string,
   if (!flag) return { error: "Flag not found" };
   const env = getEnvironmentBySlug(environmentSlug, DB_PATH);
   if (!env) return { error: "Environment not found" };
-  updateFlagEnvironment(flagKey, environmentSlug, { enabled: enabled ? 1 : 0 }, DB_PATH);
+  updateFlagEnvironment(flagKey, environmentSlug, { enabled: enabled ? 1 : 0, rules: "[]" }, DB_PATH);
   addAuditLog(flagKey, "toggled", {
     environment: environmentSlug,
     changes: JSON.stringify({ enabled }),
@@ -83,6 +75,22 @@ export async function createEnvironmentAction(name: string, slug: string, color:
   return { env };
 }
 
+export async function updateEnvironmentColorAction(environmentId: string, color: string) {
+  const env = getEnvironmentById(environmentId, DB_PATH);
+  if (!env) return { error: "Environment not found" };
+  const updated = updateEnvironment(environmentId, { color }, DB_PATH);
+  if (!updated) return { error: "Update failed" };
+  return { env: updated };
+}
+
+export async function deleteEnvironmentAction(environmentId: string) {
+  const env = getEnvironmentById(environmentId, DB_PATH);
+  if (!env) return { error: "Environment not found" };
+  const ok = deleteEnvironment(environmentId, DB_PATH);
+  if (!ok) return { error: "Delete failed" };
+  return { ok: true };
+}
+
 export async function saveFlagEnvAction(
   flagKey: string,
   environmentSlug: string,
@@ -92,10 +100,10 @@ export async function saveFlagEnvAction(
   if (!flag) return { error: "Flag not found" };
   const env = getEnvironmentBySlug(environmentSlug, DB_PATH);
   if (!env) return { error: "Environment not found" };
-  updateFlagEnvironment(flagKey, environmentSlug, updates, DB_PATH);
+  updateFlagEnvironment(flagKey, environmentSlug, { ...updates, rules: "[]" }, DB_PATH);
   addAuditLog(flagKey, "updated", {
     environment: environmentSlug,
-    changes: JSON.stringify(updates),
+    changes: JSON.stringify({ ...updates, rules: "[]" }),
   }, DB_PATH);
   return { ok: true };
 }

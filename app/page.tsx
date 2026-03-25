@@ -8,7 +8,7 @@ export default function HomePage() {
         Open-source feature flags for Next.js. Self-hosted, no vendor lock-in.
       </p>
       <Link
-        href="/fyeo"
+        href="/flags"
         className="px-5 py-2.5 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 transition-colors"
       >
         Open dashboard

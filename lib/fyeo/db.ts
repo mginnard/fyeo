@@ -120,6 +120,28 @@ export function createEnvironment(
   return database.prepare("SELECT * FROM environments WHERE id = ?").get(id) as Environment;
 }
 
+export function updateEnvironment(
+  id: string,
+  updates: { color?: string; name?: string },
+  dbPath?: string
+): Environment | null {
+  const database = getDb(dbPath);
+  const env = getEnvironmentById(id, dbPath);
+  if (!env) return null;
+  const name = updates.name ?? env.name;
+  const color = updates.color ?? env.color;
+  database.prepare("UPDATE environments SET name = ?, color = ? WHERE id = ?").run(name, color, id);
+  return getEnvironmentById(id, dbPath);
+}
+
+export function deleteEnvironment(id: string, dbPath?: string): boolean {
+  const database = getDb(dbPath);
+  const env = getEnvironmentById(id, dbPath);
+  if (!env) return false;
+  database.prepare("DELETE FROM environments WHERE id = ?").run(id);
+  return true;
+}
+
 function generateId(): string {
   return Array.from(crypto.getRandomValues(new Uint8Array(8)))
     .map((b) => b.toString(16).padStart(2, "0"))
@@ -146,14 +168,14 @@ export function getFlagById(id: string, dbPath?: string): Flag | null {
 export function createFlag(
   key: string,
   name: string,
-  options: { description?: string; type?: string; default_value?: string } = {},
+  options: { description?: string } = {},
   dbPath?: string
 ): Flag {
   const database = getDb(dbPath);
   const id = generateId();
   const description = options.description ?? "";
-  const type = options.type ?? "boolean";
-  const default_value = options.default_value ?? "false";
+  const type = "boolean";
+  const default_value = "false";
   database
     .prepare(
       "INSERT INTO flags (id, key, name, description, type, default_value) VALUES (?, ?, ?, ?, ?, ?)"
@@ -172,7 +194,7 @@ export function createFlag(
 
 export function updateFlag(
   key: string,
-  updates: { name?: string; description?: string; type?: string; default_value?: string },
+  updates: { name?: string; description?: string },
   dbPath?: string
 ): Flag | null {
   const database = getDb(dbPath);
@@ -180,13 +202,11 @@ export function updateFlag(
   if (!flag) return null;
   const name = updates.name ?? flag.name;
   const description = updates.description ?? flag.description;
-  const type = updates.type ?? flag.type;
-  const default_value = updates.default_value ?? flag.default_value;
   database
     .prepare(
-      "UPDATE flags SET name = ?, description = ?, type = ?, default_value = ?, updated_at = CURRENT_TIMESTAMP WHERE key = ?"
+      "UPDATE flags SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE key = ?"
     )
-    .run(name, description, type, default_value, key);
+    .run(name, description, key);
   return getFlagByKey(key, dbPath);
 }
 

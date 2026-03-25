@@ -3,8 +3,8 @@ import { Inter, Source_Code_Pro } from "next/font/google";
 import "./globals.css";
 import { getAllFlags } from "@/lib/fyeo/sdk";
 import { FyeoProvider } from "@/lib/fyeo/client";
-import { ThemeProvider } from "./(fyeo)/fyeo/ThemeProvider";
-import { Sidebar } from "./(fyeo)/fyeo/components/Sidebar";
+import { ThemeProvider } from "./(dashboard)/ThemeProvider";
+import { Sidebar } from "./(dashboard)/components/Sidebar";
 
 const inter = Inter({
   subsets: ["latin"],

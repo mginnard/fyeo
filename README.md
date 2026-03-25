@@ -2,7 +2,7 @@
 
 Open-source, self-hosted feature flag and remote configuration platform for Next.js. Think of it as a lightweight alternative to LaunchDarkly that runs inside your app with SQLite — no external services.
 
-**To add fyeo to an existing Next.js app**, follow the step-by-step Getting started section on the Overview page at `/fyeo/overview` (after you’ve integrated the app: copy the fyeo folders, install deps, and wire the root layout).
+**To add fyeo to an existing Next.js app**, follow the step-by-step Getting started section on the Overview page at `/overview` (after you’ve integrated the app: copy the fyeo folders, install deps, and wire the root layout).
 
 ## Quick start
 
@@ -21,7 +21,7 @@ Open-source, self-hosted feature flag and remote configuration platform for Next
    ```
 
 4. **Dashboard**
-   - Open [http://localhost:3000/fyeo](http://localhost:3000/fyeo) to manage flags.
+   - Open [http://localhost:3000/flags](http://localhost:3000/flags) to manage flags.
 
 ## Usage
 
@@ -54,4 +54,4 @@ Open-source, self-hosted feature flag and remote configuration platform for Next
 
 - `lib/fyeo/` — DB, evaluator, SDK, types
 - `app/api/fyeo/[...path]/` — REST API
-- `app/(fyeo)/fyeo/` — Admin UI (Flags, Environments, Audit)
+- `app/(dashboard)/` — Admin UI (Overview, Flags, Environments, Audit) at top-level routes

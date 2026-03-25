@@ -25,7 +25,6 @@ export default async function FlagDetailPage({
       enabled: fe?.enabled ?? 0,
       value: fe?.value ?? null,
       rollout_percentage: fe?.rollout_percentage ?? 100,
-      rules: fe?.rules ?? "[]",
     };
   });
   const auditEntries = getAuditLog({ flag: decodedKey, limit: 50 }, DB_PATH);

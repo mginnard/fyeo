@@ -117,7 +117,7 @@ export async function POST(
 
   if (route[0] === "flags" && route.length === 1) {
     const body = await request.json();
-    const { key: flagKey, name, description, type, default_value } = body;
+    const { key: flagKey, name, description } = body;
     if (!flagKey || !name) {
       return NextResponse.json({ error: "key and name required" }, { status: 400 });
     }
@@ -125,12 +125,7 @@ export async function POST(
     if (existing) {
       return NextResponse.json({ error: "Flag key already exists" }, { status: 409 });
     }
-    const flag = createFlag(
-      flagKey,
-      name,
-      { description, type, default_value },
-      DB_PATH
-    );
+    const flag = createFlag(flagKey, name, { description }, DB_PATH);
     addAuditLog(flagKey, "created", { changes: JSON.stringify({ key: flagKey, name }) }, DB_PATH);
     return NextResponse.json(flag);
   }
@@ -200,11 +195,9 @@ export async function PATCH(
     const flag = getFlagByKey(key, DB_PATH);
     if (!flag) return NextResponse.json({ error: "Flag not found" }, { status: 404 });
     const body = await request.json();
-    const updates: { name?: string; description?: string; type?: string; default_value?: string } = {};
+    const updates: { name?: string; description?: string } = {};
     if (body.name !== undefined) updates.name = body.name;
     if (body.description !== undefined) updates.description = body.description;
-    if (body.type !== undefined) updates.type = body.type;
-    if (body.default_value !== undefined) updates.default_value = String(body.default_value);
     const updated = updateFlag(key, updates, DB_PATH);
     addAuditLog(key, "updated", { changes: JSON.stringify(updates) }, DB_PATH);
     return NextResponse.json(updated);
@@ -234,7 +227,7 @@ export async function PUT(
     if (body.enabled !== undefined) updates.enabled = body.enabled ? 1 : 0;
     if (body.value !== undefined) updates.value = body.value === null ? null : String(body.value);
     if (body.rollout_percentage !== undefined) updates.rollout_percentage = Math.min(100, Math.max(0, Number(body.rollout_percentage)));
-    if (body.rules !== undefined) updates.rules = typeof body.rules === "string" ? body.rules : JSON.stringify(body.rules ?? []);
+    updates.rules = "[]";
     const updated = updateFlagEnvironment(key, envSlug, updates, DB_PATH);
     addAuditLog(key, "updated", { environment: envSlug, changes: JSON.stringify(updates) }, DB_PATH);
     return NextResponse.json(updated);

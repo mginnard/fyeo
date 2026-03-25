@@ -46,7 +46,7 @@ export function GettingStartedSection() {
           <strong className="text-gray-900 dark:text-white">Copy fyeo into your project</strong> — Copy the following from the fyeo repo into your app (keep the same paths):
           <ul className="mt-2 list-disc list-inside space-y-0.5 text-gray-600 dark:text-gray-400">
             <li><code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">lib/fyeo/</code> → your project&apos;s <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">lib/fyeo/</code></li>
-            <li><code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">app/(fyeo)/fyeo/</code> → your project&apos;s <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">app/(fyeo)/fyeo/</code></li>
+            <li><code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">app/(dashboard)/</code> → your project&apos;s <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">app/(dashboard)/</code> (admin UI: overview, flags, environments, audit)</li>
             <li><code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">app/api/fyeo/</code> → your project&apos;s <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">app/api/fyeo/</code></li>
           </ul>
           <p className="mt-2 text-gray-600 dark:text-gray-400">Ensure your <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">tsconfig.json</code> has <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">&quot;paths&quot;: {"{ "}&quot;@/*&quot;: [&quot;./*&quot;]{"}"}</code> so <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">@/lib/fyeo</code> and the layout imports resolve.</p>
@@ -66,12 +66,12 @@ export function GettingStartedSection() {
           <p className="mt-2 text-gray-600 dark:text-gray-400">The database is created at <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">.fyeo/flags.db</code> on first use.</p>
         </li>
         <li>
-          <strong className="text-gray-900 dark:text-white">Wire up your root layout</strong> — In your app&apos;s root layout (e.g. <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">app/layout.tsx</code>), fetch flags with <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">getAllFlags()</code>, wrap the app with <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">ThemeProvider</code> and <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">FyeoProvider</code>, and render the fyeo <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">Sidebar</code> plus main content so the dashboard is available at <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">/fyeo</code>. You can keep your existing <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">&lt;html&gt;</code>, fonts, and metadata; adjust the body as below.
+          <strong className="text-gray-900 dark:text-white">Wire up your root layout</strong> — In your app&apos;s root layout (e.g. <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">app/layout.tsx</code>), fetch flags with <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">getAllFlags()</code>, wrap the app with <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">ThemeProvider</code> and <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">FyeoProvider</code>, and render the fyeo <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">Sidebar</code> plus main content so the dashboard uses top-level routes (e.g. <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">/flags</code>, <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">/overview</code>). You can keep your existing <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">&lt;html&gt;</code>, fonts, and metadata; adjust the body as below.
           <CodeBlock lang="tsx">
 {`import { getAllFlags } from "@/lib/fyeo/sdk";
 import { FyeoProvider } from "@/lib/fyeo/client";
-import { ThemeProvider } from "./(fyeo)/fyeo/ThemeProvider";
-import { Sidebar } from "./(fyeo)/fyeo/components/Sidebar";
+import { ThemeProvider } from "./(dashboard)/ThemeProvider";
+import { Sidebar } from "./(dashboard)/components/Sidebar";
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let flags: Record<string, unknown>;
@@ -105,10 +105,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </CodeBlock>
         </li>
         <li>
-          <strong className="text-gray-900 dark:text-white">Run and open the dashboard</strong> — Run <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">npm run dev</code> and open <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">http://localhost:3000/fyeo/overview</code> (or <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">/fyeo</code>) to confirm the UI loads.
+          <strong className="text-gray-900 dark:text-white">Run and open the dashboard</strong> — Run <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">npm run dev</code> and open <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">http://localhost:3000/overview</code> or <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">/flags</code> to confirm the UI loads.
         </li>
         <li>
-          <strong className="text-gray-900 dark:text-white">Create your first flag</strong> — Go to <Link href="/fyeo" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">Flags</Link>, click Create, and add a key (e.g. <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">my-first-flag</code>) and name. Use it in code with <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">getFlag(&quot;my-first-flag&quot;)</code> or <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">useFlag(&quot;my-first-flag&quot;)</code> as in the Code examples below.
+          <strong className="text-gray-900 dark:text-white">Create your first flag</strong> — Go to <Link href="/flags" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">Flags</Link>, click Create, and add a key (e.g. <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">my-first-flag</code>) and name. Use it in code with <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">getFlag(&quot;my-first-flag&quot;)</code> or <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">useFlag(&quot;my-first-flag&quot;)</code> as in the Code examples below.
         </li>
       </ol>
     </section>
@@ -122,8 +122,8 @@ export function CreatingAndUsingFlagsSection() {
         Creating and using flags
       </h2>
       <p className="text-gray-700 dark:text-gray-300 text-sm">
-        Create flags from the <Link href="/fyeo" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">Flags</Link> page:
-        choose a <strong>key</strong> (e.g. <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">new-checkout</code>), a name, and optionally a description and type (boolean, string, number, json).
+        Create flags from the <Link href="/flags" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">Flags</Link> page:
+        choose a <strong>key</strong> (e.g. <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">new-checkout</code>), a name, and optionally a description. New flags are boolean and default to off.
         Each flag can be toggled on/off and configured separately per environment (see Environments below).
       </p>
       <p className="text-gray-700 dark:text-gray-300 text-sm">
@@ -141,11 +141,11 @@ export function EnvironmentsSection() {
       </h2>
       <p className="text-gray-700 dark:text-gray-300 text-sm">
         Environments let you have different flag states per stage (e.g. development, staging, production). You can create them under{" "}
-        <Link href="/fyeo/environments" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">Environments</Link>.
+        <Link href="/environments" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">Environments</Link>.
       </p>
       <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 text-sm">
         <li>Each environment has a <strong>slug</strong> (e.g. <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">production</code>) used in code via <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">FYEO_ENV</code>.</li>
-        <li>Per flag and environment you can: turn the flag on/off, set a value, set a rollout percentage, and add targeting rules.</li>
+        <li>Per flag and environment you can turn the flag on or off and set a rollout percentage.</li>
         <li>Evaluation uses <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">FYEO_ENV</code> to select which environment config to use — set it in <code className="rounded bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 font-mono text-xs">.env.local</code> or your deployment.</li>
       </ul>
     </section>
@@ -176,7 +176,7 @@ export function CodeExamplesSection() {
 // Single flag (boolean by default)
 const enabled = getFlag<boolean>("new-checkout-flow");
 
-// With user context (for targeting rules)
+// With user context (stable rollout bucketing uses id when present)
 const flags = getAllFlags({ id: user.id, email: user.email });
 const showBanner = flags["promo-banner"] === true;`}
           </CodeBlock>

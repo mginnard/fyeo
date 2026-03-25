@@ -7,31 +7,7 @@ export type UserContext = {
   [key: string]: string | number | boolean | undefined;
 };
 
-export type FlagType = "boolean" | "string" | "number" | "json";
-
-export type TargetingRuleOperator =
-  | "eq"
-  | "neq"
-  | "contains"
-  | "startsWith"
-  | "endsWith"
-  | "in"
-  | "nin"
-  | "gt"
-  | "lt"
-  | "gte"
-  | "lte"
-  | "regex"
-  | "semver_gt"
-  | "semver_lt"
-  | "semver_eq";
-
-export interface TargetingRule {
-  attribute: string;
-  operator: TargetingRuleOperator;
-  values?: (string | number | boolean)[];
-  value: string; // value to serve when rule matches
-}
+export type FlagType = "boolean";
 
 export interface Environment {
   id: string;

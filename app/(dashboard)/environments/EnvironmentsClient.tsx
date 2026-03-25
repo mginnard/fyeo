@@ -4,7 +4,13 @@ import { useState, useMemo, useCallback } from "react";
 import { Modal } from "../components/Modal";
 import { Toast } from "../components/Toast";
 import { SortableTh } from "../components/SortableTh";
-import { createEnvironmentAction } from "@/lib/fyeo/server-actions";
+import { RowActionsMenu } from "../components/RowActionsMenu";
+import { ENVIRONMENT_TAILWIND_HEX } from "../components/tailwindColorPalette";
+import {
+  createEnvironmentAction,
+  updateEnvironmentColorAction,
+  deleteEnvironmentAction,
+} from "@/lib/fyeo/server-actions";
 
 type EnvRow = {
   id: string;
@@ -66,9 +72,64 @@ export function EnvironmentsClient({
     return [...environments].sort((a, b) => compareEnvs(a, b, sortKey, dir));
   }, [environments, sortKey, sortDir]);
 
+  const [editColorEnv, setEditColorEnv] = useState<EnvRow | null>(null);
+  const [paletteColor, setPaletteColor] = useState<string>(ENVIRONMENT_TAILWIND_HEX[0]);
+  const [savingColor, setSavingColor] = useState(false);
+  const [deleteEnv, setDeleteEnv] = useState<EnvRow | null>(null);
+  const [deletingEnv, setDeletingEnv] = useState(false);
+
   const showToast = (msg: string) => {
     setToast(msg);
     setToastVisible(true);
+  };
+
+  const refetchEnvironments = useCallback(async () => {
+    const res = await fetch("/api/fyeo/environments");
+    const list = await res.json();
+    const flagsRes = await fetch("/api/fyeo/flags");
+    const flags = await flagsRes.json();
+    const counts: Record<string, number> = {};
+    for (const flag of flags) {
+      const detail = await fetch(`/api/fyeo/flags/${encodeURIComponent(flag.key)}`).then((r) => r.json());
+      (detail.environments ?? []).forEach((env: { id: string; enabled: number }) => {
+        if (env.enabled) counts[env.id] = (counts[env.id] ?? 0) + 1;
+      });
+    }
+    setEnvironments(list.map((e: EnvRow) => ({ ...e, enabledCount: counts[e.id] ?? 0 })));
+  }, []);
+
+  const handleSaveColor = async () => {
+    if (!editColorEnv) return;
+    setSavingColor(true);
+    try {
+      const result = await updateEnvironmentColorAction(editColorEnv.id, paletteColor);
+      if ("error" in result) {
+        showToast(result.error ?? "Could not update color");
+        return;
+      }
+      setEditColorEnv(null);
+      showToast("Color updated");
+      await refetchEnvironments();
+    } finally {
+      setSavingColor(false);
+    }
+  };
+
+  const handleConfirmDeleteEnv = async () => {
+    if (!deleteEnv) return;
+    setDeletingEnv(true);
+    try {
+      const result = await deleteEnvironmentAction(deleteEnv.id);
+      if ("error" in result) {
+        showToast(result.error ?? "Could not delete environment");
+        return;
+      }
+      setDeleteEnv(null);
+      showToast("Environment deleted");
+      await refetchEnvironments();
+    } finally {
+      setDeletingEnv(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,20 +147,7 @@ export function EnvironmentsClient({
       setSlug("");
       setColor("#6366f1");
       showToast("Environment created");
-      const res = await fetch("/api/fyeo/environments");
-      const list = await res.json();
-      const flagsRes = await fetch("/api/fyeo/flags");
-      const flags = await flagsRes.json();
-      const counts: Record<string, number> = {};
-      for (const flag of flags) {
-        const detail = await fetch(`/api/fyeo/flags/${encodeURIComponent(flag.key)}`).then((r) => r.json());
-        (detail.environments ?? []).forEach((env: { id: string; enabled: number }) => {
-          if (env.enabled) counts[env.id] = (counts[env.id] ?? 0) + 1;
-        });
-      }
-      setEnvironments(
-        list.map((e: EnvRow) => ({ ...e, enabledCount: counts[e.id] ?? 0 }))
-      );
+      await refetchEnvironments();
     } finally {
       setSaving(false);
     }
@@ -154,14 +202,17 @@ export function EnvironmentsClient({
                 direction={sortDir}
                 onSort={handleSort}
               />
+              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 w-14">
+                <span className="sr-only">Actions</span>
+              </th>
             </tr>
           </thead>
           <tbody>
             {sortedEnvironments.map((env) => (
-              <tr key={env.id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
+              <tr key={env.id} className="border-b border-gray-100 dark:border-white/5 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5">
                 <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{env.name}</td>
                 <td className="px-4 py-3">
-                  <code className="px-2 py-0.5 rounded bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 font-mono text-gray-700 dark:text-gray-300">
+                  <code className="inline-flex w-max px-2 py-0.5 rounded bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 font-mono text-[11px] text-gray-700 dark:text-gray-300">
                     {env.slug}
                   </code>
                 </td>
@@ -172,11 +223,116 @@ export function EnvironmentsClient({
                   />
                 </td>
                 <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{env.enabledCount}</td>
+                <td className="px-4 py-3 text-right align-middle">
+                  <RowActionsMenu
+                    ariaLabel={`Actions for environment ${env.name}`}
+                    items={[
+                      {
+                        id: "edit",
+                        label: "Edit",
+                        onSelect: () => {
+                          setPaletteColor(env.color);
+                          setEditColorEnv(env);
+                        },
+                      },
+                      {
+                        id: "delete",
+                        label: "Delete",
+                        destructive: true,
+                        onSelect: () => setDeleteEnv(env),
+                      },
+                    ]}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <Modal open={editColorEnv !== null} onClose={() => !savingColor && setEditColorEnv(null)} title="Environment color">
+        {editColorEnv ? (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Choose a color for <span className="font-medium text-gray-900 dark:text-white">{editColorEnv.name}</span>.
+            </p>
+            <div
+              className="grid grid-cols-8 gap-2"
+              role="listbox"
+              aria-label="Tailwind palette colors"
+            >
+              {ENVIRONMENT_TAILWIND_HEX.map((hex) => {
+                const selected = paletteColor.toLowerCase() === hex.toLowerCase();
+                return (
+                  <button
+                    key={hex}
+                    type="button"
+                    role="option"
+                    aria-selected={selected}
+                    className={`h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 dark:focus:ring-white dark:focus:ring-offset-gray-900 ${
+                      selected ? "border-gray-900 dark:border-white ring-2 ring-gray-900/20 dark:ring-white/30" : "border-gray-200 dark:border-white/20"
+                    }`}
+                    style={{ backgroundColor: hex }}
+                    title={hex}
+                    onClick={() => setPaletteColor(hex)}
+                  />
+                );
+              })}
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                disabled={savingColor}
+                onClick={() => setEditColorEnv(null)}
+                className="px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={savingColor}
+                onClick={() => void handleSaveColor()}
+                className="px-4 py-2 rounded-lg bg-gray-900 text-sm font-medium text-white hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 disabled:opacity-50"
+              >
+                {savingColor ? "Saving…" : "Save color"}
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
+      <Modal
+        open={deleteEnv !== null}
+        onClose={() => !deletingEnv && setDeleteEnv(null)}
+        title="Delete environment"
+      >
+        {deleteEnv ? (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+              Delete <span className="font-medium text-gray-900 dark:text-white">{deleteEnv.name}</span> (
+              <code className="rounded bg-gray-100 px-1 py-0.5 font-mono text-xs dark:bg-white/10">{deleteEnv.slug}</code>
+              )? All flag overrides for this environment will be removed. Other parts of your stack that still reference this
+              slug may misbehave. This cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                disabled={deletingEnv}
+                onClick={() => setDeleteEnv(null)}
+                className="px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletingEnv}
+                onClick={() => void handleConfirmDeleteEnv()}
+                className="px-4 py-2 rounded-lg bg-red-600 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {deletingEnv ? "Deleting…" : "Delete environment"}
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add environment">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
