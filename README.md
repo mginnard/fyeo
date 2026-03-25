@@ -1,8 +1,8 @@
-# Gatehouse
+# fyeo
 
 Open-source, self-hosted feature flag and remote configuration platform for Next.js. Think of it as a lightweight alternative to LaunchDarkly that runs inside your app with SQLite — no external services.
 
-**To add Gatehouse to an existing Next.js app**, follow the step-by-step Getting started section on the Overview page at `/gatehouse/overview` (after you’ve integrated the app: copy the Gatehouse folders, install deps, and wire the root layout).
+**To add fyeo to an existing Next.js app**, follow the step-by-step Getting started section on the Overview page at `/fyeo/overview` (after you’ve integrated the app: copy the fyeo folders, install deps, and wire the root layout).
 
 ## Quick start
 
@@ -12,8 +12,8 @@ Open-source, self-hosted feature flag and remote configuration platform for Next
    ```
 
 2. **Configure**
-   - Copy `.env.example` to `.env.local` (or set `GATEHOUSE_SECRET` and optionally `GATEHOUSE_ENV`).
-   - The database is created at `.gatehouse/flags.db` on first use.
+   - Copy `.env.example` to `.env.local` (or set `FYEO_SECRET` and optionally `FYEO_ENV`).
+   - The database is created at `.fyeo/flags.db` on first use.
 
 3. **Run**
    ```bash
@@ -21,24 +21,24 @@ Open-source, self-hosted feature flag and remote configuration platform for Next
    ```
 
 4. **Dashboard**
-   - Open [http://localhost:3000/gatehouse](http://localhost:3000/gatehouse) to manage flags.
+   - Open [http://localhost:3000/fyeo](http://localhost:3000/fyeo) to manage flags.
 
 ## Usage
 
 - **Server components / API**
   ```ts
-  import { getFlag, getAllFlags } from "@/lib/gatehouse";
+  import { getFlag, getAllFlags } from "@/lib/fyeo";
   const on = getFlag<boolean>("new-checkout-flow");
   const flags = await getAllFlags({ id: user.id });
   ```
 
 - **Client components**
-  - Wrap your app (or layout) with `<GatehouseProvider flags={flags}>` and pass `flags` from `getAllFlags()` in the root layout.
+  - Wrap your app (or layout) with `<FyeoProvider flags={flags}>` and pass `flags` from `getAllFlags()` in the root layout.
   - Then: `const on = useFlag("new-checkout-flow");`
 
 - **Middleware (Edge)**
   ```ts
-  import { getFlagInMiddleware } from "@/lib/gatehouse";
+  import { getFlagInMiddleware } from "@/lib/fyeo";
   const enabled = await getFlagInMiddleware("my-flag", request);
   ```
 
@@ -46,12 +46,12 @@ Open-source, self-hosted feature flag and remote configuration platform for Next
 
 | Variable            | Description                          |
 |---------------------|--------------------------------------|
-| `GATEHOUSE_SECRET`   | Secret for protecting admin API      |
-| `GATEHOUSE_ENV`      | Current environment slug (default: `development`) |
-| `GATEHOUSE_DB_PATH`  | DB path (default: `.gatehouse/flags.db`) |
+| `FYEO_SECRET`   | Secret for protecting admin API      |
+| `FYEO_ENV`      | Current environment slug (default: `development`) |
+| `FYEO_DB_PATH`  | DB path (default: `.fyeo/flags.db`) |
 
 ## Project layout
 
-- `lib/gatehouse/` — DB, evaluator, SDK, types
-- `app/api/gatehouse/[...path]/` — REST API
-- `app/(gatehouse)/gatehouse/` — Admin UI (Flags, Environments, Audit)
+- `lib/fyeo/` — DB, evaluator, SDK, types
+- `app/api/fyeo/[...path]/` — REST API
+- `app/(fyeo)/fyeo/` — Admin UI (Flags, Environments, Audit)

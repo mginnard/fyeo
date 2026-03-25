@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Inter, Source_Code_Pro } from "next/font/google";
 import "./globals.css";
-import { getAllFlags } from "@/lib/gatehouse/sdk";
-import { GatehouseProvider } from "@/lib/gatehouse/client";
-import { ThemeProvider } from "./(gatehouse)/gatehouse/ThemeProvider";
-import { Sidebar } from "./(gatehouse)/gatehouse/components/Sidebar";
+import { getAllFlags } from "@/lib/fyeo/sdk";
+import { FyeoProvider } from "@/lib/fyeo/client";
+import { ThemeProvider } from "./(fyeo)/fyeo/ThemeProvider";
+import { Sidebar } from "./(fyeo)/fyeo/components/Sidebar";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -17,7 +17,7 @@ const sourceCodePro = Source_Code_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "Gatehouse — Feature Flags",
+  title: "fyeo — Feature Flags",
   description: "Open-source feature flag platform for Next.js",
 };
 
@@ -37,20 +37,20 @@ export default async function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem('gatehouse-theme');if(t==='light')document.documentElement.classList.remove('dark');else document.documentElement.classList.add('dark');})();`,
+            __html: `(function(){var t=localStorage.getItem('fyeo-theme');if(t==='light')document.documentElement.classList.remove('dark');else document.documentElement.classList.add('dark');})();`,
           }}
         />
       </head>
       <body className="font-sans antialiased h-full min-h-screen overflow-hidden bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100">
         <ThemeProvider>
-          <GatehouseProvider flags={flags}>
+          <FyeoProvider flags={flags}>
             <div className="h-screen flex overflow-hidden bg-gray-50 dark:bg-gray-950">
               <Sidebar />
               <main className="flex-1 min-h-0 overflow-auto">
                 {children}
               </main>
             </div>
-          </GatehouseProvider>
+          </FyeoProvider>
         </ThemeProvider>
       </body>
     </html>
